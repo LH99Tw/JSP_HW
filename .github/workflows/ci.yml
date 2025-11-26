@@ -1,0 +1,211 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  java-lint:
+    name: Java Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+    
+    - name: Download Servlet API for compilation check
+      run: |
+        mkdir -p /tmp/lib
+        # Servlet API 4.0 다운로드 (Tomcat 9.x 포함)
+        curl -L -o /tmp/lib/servlet-api.jar \
+          https://repo1.maven.org/maven2/javax/servlet/javax.servlet-api/4.0.1/javax.servlet-api-4.0.1.jar || \
+          echo "⚠️ Could not download servlet-api, using local lib if available"
+    
+    - name: Check Java syntax
+      run: |
+        echo "Checking Java source files..."
+        CLASSPATH="/tmp/lib/servlet-api.jar"
+        if [ -d src/main/webapp/WEB-INF/lib ]; then
+          CLASSPATH="$CLASSPATH:$(find src/main/webapp/WEB-INF/lib -name "*.jar" 2>/dev/null | tr '\n' ':')"
+        fi
+        
+        JAVA_FILES=$(find src/main/java -name "*.java" -type f)
+        if [ -z "$JAVA_FILES" ]; then
+          echo "⚠️ No Java files found"
+          exit 0
+        fi
+        
+        mkdir -p /tmp/classes
+        HAS_ERRORS=false
+        
+        for file in $JAVA_FILES; do
+          echo "Checking: $file"
+          if ! javac -cp "$CLASSPATH" \
+                     -sourcepath src/main/java \
+                     -d /tmp/classes \
+                     "$file" 2>&1; then
+            echo "❌ Syntax/compilation error in $file"
+            HAS_ERRORS=true
+          fi
+        done
+        
+        if [ "$HAS_ERRORS" = true ]; then
+          echo "❌ Found Java file(s) with errors"
+          exit 1
+        else
+          echo "✅ All Java files compiled successfully"
+        fi
+    
+    - name: Check JSP syntax (basic)
+      run: |
+        echo "Checking JSP files for basic syntax..."
+        find src/main/webapp -name "*.jsp" -type f | while read file; do
+          echo "Checking: $file"
+          # JSP 기본 문법 체크 (주석, 태그 닫힘 등)
+          if ! grep -q "<%@\|<%!\|<%\|<jsp:" "$file" 2>/dev/null; then
+            echo "⚠️ No JSP directives found in $file"
+          fi
+          # 닫히지 않은 태그 체크 (간단한 버전)
+          open_tags=$(grep -o "<[^/>]*>" "$file" | grep -v "<%\|<%@\|<%!" | wc -l)
+          close_tags=$(grep -o "</[^>]*>" "$file" | wc -l)
+          if [ "$open_tags" -ne "$close_tags" ]; then
+            echo "⚠️ Possible unclosed tags in $file (open: $open_tags, close: $close_tags)"
+          fi
+        done || echo "⚠️ No JSP files found"
+    
+    - name: Check web.xml validity
+      run: |
+        if [ -f src/main/webapp/WEB-INF/web.xml ]; then
+          echo "Checking web.xml..."
+          xmllint --noout src/main/webapp/WEB-INF/web.xml || {
+            echo "❌ web.xml is not valid XML"
+            exit 1
+          }
+          echo "✅ web.xml is valid"
+        else
+          echo "⚠️ web.xml not found"
+        fi
+
+  python-lint:
+    name: Python Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install pip-tools for dependency checking
+      run: |
+        pip install pip-tools pipdeptree
+    
+    - name: Check requirements.txt format
+      run: |
+        if [ -f ml-service/requirements.txt ]; then
+          echo "Checking requirements.txt format..."
+          # 각 라인 형식 체크 (패키지명==버전 또는 패키지명>=버전)
+          while IFS= read -r line; do
+            # 주석이나 빈 줄은 스킵
+            if [[ "$line" =~ ^[[:space:]]*# ]] || [[ -z "$line" ]]; then
+              continue
+            fi
+            # 패키지명 형식 체크
+            if ! [[ "$line" =~ ^[a-zA-Z0-9_-]+[[:space:]]*([>=<!=]+[[:space:]]*[0-9.]+)?$ ]]; then
+              echo "❌ Invalid format in requirements.txt: $line"
+              exit 1
+            fi
+          done < ml-service/requirements.txt
+          echo "✅ requirements.txt format is valid"
+        else
+          echo "⚠️ requirements.txt not found"
+        fi
+    
+    - name: Check for dependency conflicts
+      run: |
+        if [ -f ml-service/requirements.txt ]; then
+          echo "Checking for dependency conflicts..."
+          cd ml-service
+          # 가상환경 생성 및 의존성 설치
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          
+          # 의존성 충돌 체크
+          echo "Checking dependency conflicts..."
+          pip check || {
+            echo "❌ Dependency conflicts detected!"
+            echo "Conflicting packages:"
+            pip check 2>&1
+            exit 1
+          }
+          echo "✅ No dependency conflicts found"
+          
+          # 의존성 트리 출력
+          echo "Dependency tree:"
+          pipdeptree
+        else
+          echo "⚠️ requirements.txt not found, skipping dependency check"
+        fi
+    
+    - name: Python syntax check
+      run: |
+        echo "Checking Python syntax..."
+        find ml-service/app -name "*.py" -type f | while read file; do
+          echo "Checking: $file"
+          python -m py_compile "$file" || {
+            echo "❌ Syntax error in $file"
+            exit 1
+          }
+        done || echo "⚠️ No Python files found"
+    
+    - name: Check Python code style (optional)
+      run: |
+        pip install flake8 || true
+        if command -v flake8 &> /dev/null; then
+          echo "Running flake8 (if available)..."
+          find ml-service/app -name "*.py" -type f -exec flake8 {} \; || echo "⚠️ flake8 check completed with warnings"
+        fi
+
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Check Docker Compose syntax
+      run: |
+        if [ -f docker/docker-compose.yml ]; then
+          echo "Checking docker-compose.yml..."
+          docker-compose -f docker/docker-compose.yml config > /dev/null || {
+            echo "❌ docker-compose.yml is invalid"
+            exit 1
+          }
+          echo "✅ docker-compose.yml is valid"
+        fi
+    
+    - name: Check Dockerfile syntax
+      run: |
+        if [ -f ml-service/Dockerfile ]; then
+          echo "Checking ML service Dockerfile..."
+          docker build --dry-run -f ml-service/Dockerfile ml-service/ || echo "⚠️ Dockerfile check completed"
+        fi
+        if [ -f docker/Dockerfile.tomcat ]; then
+          echo "Checking Tomcat Dockerfile..."
+          docker build --dry-run -f docker/Dockerfile.tomcat . || echo "⚠️ Dockerfile check completed"
+        fi
+

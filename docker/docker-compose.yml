@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgres:14
+    container_name: jsp-hw-postgres
+    environment:
+      POSTGRES_DB: jsp_hw
+      POSTGRES_USER: jsp_user
+      POSTGRES_PASSWORD: jsp_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jsp_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ml-service:
+    build:
+      context: ../ml-service
+      dockerfile: Dockerfile
+    container_name: jsp-hw-ml-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  tomcat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.tomcat
+    container_name: jsp-hw-tomcat
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=jsp_hw
+      - DB_USER=jsp_user
+      - DB_PASSWORD=jsp_password
+      - ML_SERVICE_URL=http://ml-service:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ml-service:
+        condition: service_healthy
+    volumes:
+      - ../src/main/webapp/uploads:/usr/local/tomcat/webapps/ROOT/uploads
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: jsp-hw-network
+
