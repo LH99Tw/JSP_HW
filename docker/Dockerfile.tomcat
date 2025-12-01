@@ -6,11 +6,11 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 # WAR 파일 복사 (빌드 후)
 # COPY ../target/*.war /usr/local/tomcat/webapps/ROOT.war
 
-# 직접 웹앱 디렉토리 복사
+# 직접 웹앱 디렉토리 복사 (lib 디렉토리 포함)
 COPY src/main/webapp/ /usr/local/tomcat/webapps/ROOT/
 
-# 필요한 라이브러리 복사 (JSTL, JDBC 드라이버 등)
-COPY src/main/webapp/WEB-INF/lib/ /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/
+# lib 디렉토리 생성 (없으면 생성)
+RUN mkdir -p /usr/local/tomcat/webapps/ROOT/WEB-INF/lib
 
 # classes 디렉토리 생성
 RUN mkdir -p /usr/local/tomcat/webapps/ROOT/WEB-INF/classes

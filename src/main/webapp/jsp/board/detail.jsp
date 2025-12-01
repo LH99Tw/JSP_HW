@@ -12,9 +12,9 @@
                     <span class="badge bg-danger me-2">공지</span>
                 </c:if>
                 <c:if test="${not empty post.prefix}">
-                    <span class="badge bg-secondary me-2">${post.prefix}</span>
+                    <span class="badge bg-secondary me-2"><c:out value="${post.prefix}"/></span>
                 </c:if>
-                <span class="badge bg-info">${post.category}</span>
+                <span class="badge bg-info"><c:out value="${post.category}"/></span>
             </div>
             <div>
                 <a href="${pageContext.request.contextPath}/board/list" class="btn btn-sm btn-outline-secondary">
@@ -23,10 +23,10 @@
             </div>
         </div>
         <div class="card-body">
-            <h3 class="card-title mb-3">${post.title}</h3>
+            <h3 class="card-title mb-3"><c:out value="${post.title}"/></h3>
             <div class="d-flex justify-content-between text-muted mb-3">
                 <div>
-                    <span>글쓴이: ${post.username}</span>
+                    <span>글쓴이: <c:out value="${post.username}"/></span>
                     <span class="ms-3">
                         <%
                             if (request.getAttribute("post") != null) {
@@ -48,7 +48,7 @@
             </div>
             <hr>
             <div class="card-text" style="min-height: 200px;">
-                ${post.content}
+                <c:out value="${post.content}"/>
             </div>
         </div>
         <div class="card-footer d-flex justify-content-between">
@@ -106,7 +106,7 @@
                             <div class="border-bottom pb-3 mb-3">
                                 <div class="d-flex justify-content-between mb-2">
                                     <div>
-                                        <strong>${comment.username}</strong>
+                                        <strong><c:out value="${comment.username}"/></strong>
                                         <span class="text-muted ms-2">
                                             <%
                                                 com.example.model.PostComment currentComment = (com.example.model.PostComment) pageContext.getAttribute("comment");
@@ -126,7 +126,7 @@
                                         </div>
                                     </c:if>
                                 </div>
-                                <div>${comment.content}</div>
+                                <div><c:out value="${comment.content}"/></div>
                             </div>
                         </c:forEach>
                     </c:otherwise>

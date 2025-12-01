@@ -12,7 +12,7 @@
                 <div class="card-body">
                     <c:if test="${not empty error}">
                         <div class="alert alert-danger" role="alert">
-                            ${error}
+                            <c:out value="${error}"/>
                         </div>
                     </c:if>
                     
@@ -37,20 +37,20 @@
                         <div class="mb-3">
                             <label for="prefix" class="form-label">말머리 (선택)</label>
                             <input type="text" class="form-control" id="prefix" name="prefix" 
-                                   value="${post != null ? post.prefix : ''}" 
+                                   value="<c:out value='${post != null ? post.prefix : ""}'/>" 
                                    placeholder="예: 설문, AD 등">
                         </div>
                         
                         <div class="mb-3">
                             <label for="title" class="form-label">제목</label>
                             <input type="text" class="form-control" id="title" name="title" 
-                                   value="${post != null ? post.title : ''}" 
+                                   value="<c:out value='${post != null ? post.title : ""}'/>" 
                                    maxlength="200" required>
                         </div>
                         
                         <div class="mb-3">
                             <label for="content" class="form-label">내용</label>
-                            <textarea class="form-control" id="content" name="content" rows="15" required>${post != null ? post.content : ''}</textarea>
+                            <textarea class="form-control" id="content" name="content" rows="15" required><c:out value="${post != null ? post.content : ''}"/></textarea>
                         </div>
                         
                         <div class="d-flex justify-content-end">

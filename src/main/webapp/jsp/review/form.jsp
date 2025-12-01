@@ -9,7 +9,7 @@
             <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/">홈</a></li>
             <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/sake/list">커뮤니티</a></li>
             <li class="breadcrumb-item">
-                <a href="${pageContext.request.contextPath}/sake/detail?sakeId=${sake.sakeId}">${sake.displayName}</a>
+                <a href="${pageContext.request.contextPath}/sake/detail?sakeId=${sake.sakeId}"><c:out value="${sake.displayName}"/></a>
             </li>
             <li class="breadcrumb-item active">리뷰 ${isEdit ? '수정' : '작성'}</li>
         </ol>
@@ -23,15 +23,15 @@
                 </div>
                 <div class="card-body">
                     <p class="text-muted mb-4">
-                        <strong>사케:</strong> ${sake.displayName}
+                        <strong>사케:</strong> <c:out value="${sake.displayName}"/>
                         <c:if test="${not empty sake.brand}">
-                            (${sake.brand})
+                            (<c:out value="${sake.brand}"/>)
                         </c:if>
                     </p>
                     
                     <c:if test="${not empty error}">
                         <div class="alert alert-danger" role="alert">
-                            ${error}
+                            <c:out value="${error}"/>
                         </div>
                     </c:if>
                     

@@ -8,7 +8,7 @@
         <!-- 상품 이미지 -->
         <div class="col-md-6">
             <c:if test="${not empty product.imageUrl}">
-                <img src="${product.imageUrl}" class="img-fluid rounded" alt="${product.sakeName}" style="max-height: 500px; width: 100%; object-fit: cover;">
+                <img src="${pageContext.request.contextPath}${product.imageUrl}" class="img-fluid rounded" alt="${product.sakeName}" style="max-height: 500px; width: 100%; object-fit: cover;">
             </c:if>
             <c:if test="${empty product.imageUrl}">
                 <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 500px;">
