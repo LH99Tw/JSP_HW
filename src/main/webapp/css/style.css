@@ -1,0 +1,271 @@
+/* 기본 스타일 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 헤더 스타일 */
+.top-banner {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 0.8rem;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+}
+
+header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+header h2, header h3 {
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0;
+}
+
+/* 헤더 높이 최적화 */
+header .container {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+}
+
+header .row {
+    min-height: auto;
+    align-items: center;
+}
+
+/* 검색바 스타일 조정 */
+header .form-control {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.5rem;
+    height: auto;
+}
+
+header .btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+}
+
+/* 네비게이션 스타일 */
+.navbar {
+    border-bottom: 2px solid #e0e0e0;
+    min-height: 38px;
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
+}
+
+.navbar .container {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.navbar-nav .nav-link {
+    color: #333;
+    font-weight: 500;
+    padding: 0.3rem 0.7rem;
+    transition: color 0.3s;
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #3498db;
+}
+
+/* 언어 선택 드롭다운 */
+#languageSelect {
+    width: auto;
+    min-width: 100px;
+    margin-left: 1rem;
+}
+
+/* 카드 스타일 */
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* 사케 목록 카드 스타일 (세로 이미지용) */
+.sake-list .card-img-top,
+.product-list .card-img-top {
+    background-color: #f8f9fa;
+}
+
+.sake-list .card-img-top img,
+.product-list .card-img-top img {
+    object-fit: cover;
+    object-position: center;
+}
+
+/* 반응형: 한 줄에 5개 제품 표시 */
+@media (min-width: 992px) {
+    .sake-list .col-lg-2,
+    .product-list .col-lg-2 {
+        flex: 0 0 20%;
+        max-width: 20%;
+    }
+}
+
+/* 버튼 스타일 */
+.btn-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+}
+
+/* 뱃지 스타일 */
+.badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-limited {
+    background-color: #9b59b6;
+    color: white;
+}
+
+.badge-namazake {
+    background-color: #3498db;
+    color: white;
+}
+
+.badge-premium {
+    background-color: #f39c12;
+    color: #333;
+}
+
+/* 별점 스타일 */
+.rating {
+    color: #f39c12;
+}
+
+.rating .fa-star {
+    margin-right: 2px;
+}
+
+/* 폼 스타일 */
+.form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* 테이블 스타일 */
+.table {
+    background-color: white;
+}
+
+.table thead {
+    background-color: #f8f9fa;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* 푸터 스타일 */
+footer {
+    margin-top: auto;
+    background-color: #2c3e50;
+    color: white;
+}
+
+footer a {
+    color: #ecf0f1;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+footer a:hover {
+    color: #3498db;
+}
+
+/* 컨테이너 스타일 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* 관리자 페이지 네비게이션 바 스타일 */
+.navbar-dark .navbar-brand,
+.navbar-dark .nav-link {
+    color: #ffffff !important;
+}
+
+.navbar-dark .nav-link:hover {
+    color: #e0e0e0 !important;
+}
+
+/* 유틸리티 클래스 */
+.text-primary {
+    color: #3498db !important;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075) !important;
+}
+
+/* 로딩 스피너 */
+.spinner-border {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    vertical-align: text-bottom;
+    border: 0.25em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border 0.75s linear infinite;
+}
+
+@keyframes spinner-border {
+    to { transform: rotate(360deg); }
+}

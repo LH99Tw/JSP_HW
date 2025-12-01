@@ -1,0 +1,26 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%
+    // 언어 설정 (쿠키 > 세션 > 기본값)
+    String lang = "ko";
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null) {
+        for (Cookie cookie : cookies) {
+            if ("lang".equals(cookie.getName())) {
+                lang = cookie.getValue();
+                break;
+            }
+        }
+    }
+    if (session.getAttribute("lang") != null) {
+        lang = (String) session.getAttribute("lang");
+    }
+    // 유효성 검사
+    if (!lang.equals("ko") && !lang.equals("en") && !lang.equals("ja")) {
+        lang = "ko";
+    }
+    request.setAttribute("currentLang", lang);
+%>
+<fmt:setLocale value="${currentLang}"/>
+<fmt:setBundle basename="messages" var="messages"/>
+
