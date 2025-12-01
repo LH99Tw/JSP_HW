@@ -19,16 +19,12 @@ import java.util.List;
 @WebServlet("/sake/list")
 public class SakeListServlet extends HttpServlet {
     
-    private SakeDAO sakeDAO;
-    
-    @Override
-    public void init() throws ServletException {
-        sakeDAO = new SakeDAO();
-    }
-    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        System.out.println("SakeListServlet: doGet called");
+        SakeDAO sakeDAO = new SakeDAO();
         
         // 필터 파라미터
         String region = request.getParameter("region");

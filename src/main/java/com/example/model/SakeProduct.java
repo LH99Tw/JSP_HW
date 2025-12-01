@@ -62,6 +62,10 @@ public class SakeProduct {
         return isPublished;
     }
     
+    public boolean getPublished() {
+        return isPublished;
+    }
+    
     public void setPublished(boolean published) {
         isPublished = published;
     }

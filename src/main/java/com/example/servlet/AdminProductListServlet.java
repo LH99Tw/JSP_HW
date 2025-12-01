@@ -25,9 +25,12 @@ public class AdminProductListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        System.out.println("AdminProductListServlet: doGet called");
+        
         // 관리자 권한 체크
         User user = SessionUtil.getUser(request.getSession(false));
         if (user == null || !"ADMIN".equals(user.getRole())) {
+            System.out.println("AdminProductListServlet: Not admin, redirecting");
             response.sendRedirect(request.getContextPath() + "/");
             return;
         }
@@ -56,7 +59,7 @@ public class AdminProductListServlet extends HttpServlet {
             // 노출 여부 필터링 (클라이언트 측에서 처리)
             if (published != null && !published.isEmpty()) {
                 boolean isPublished = Boolean.parseBoolean(published);
-                products.removeIf(p -> p.isPublished() != isPublished);
+                products.removeIf(p -> p.getPublished() != isPublished);
             }
             
             // request에 설정
@@ -67,12 +70,19 @@ public class AdminProductListServlet extends HttpServlet {
             request.setAttribute("published", published);
             
             // JSP로 포워드
+            System.out.println("AdminProductListServlet: Forwarding to JSP");
             request.getRequestDispatcher("/jsp/admin/product/list.jsp").forward(request, response);
             
         } catch (SQLException e) {
             e.printStackTrace();
+            System.out.println("AdminProductListServlet: SQLException - " + e.getMessage());
             request.setAttribute("error", "상품 목록을 불러오는 중 오류가 발생했습니다.");
             request.getRequestDispatcher("/jsp/error/error.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("AdminProductListServlet: Exception - " + e.getMessage());
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "오류 발생: " + e.getMessage());
         }
     }
 }

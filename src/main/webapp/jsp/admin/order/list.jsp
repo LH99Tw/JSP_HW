@@ -90,9 +90,10 @@
                                         </td>
                                         <td>
                                             <%
-                                                if (order.getCreatedAt() != null) {
-                                                    java.util.Date date = new java.util.Date(order.getCreatedAt().getTime());
-                                                    request.setAttribute("orderDate", date);
+                                                com.example.model.Order orderObj = (com.example.model.Order) pageContext.getAttribute("order");
+                                                if (orderObj != null && orderObj.getCreatedAt() != null) {
+                                                    java.util.Date date = new java.util.Date(orderObj.getCreatedAt().getTime());
+                                                    pageContext.setAttribute("orderDate", date);
                                                 }
                                             %>
                                             <c:if test="${not empty orderDate}">

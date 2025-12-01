@@ -24,9 +24,12 @@ public class AdminOrderListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        System.out.println("AdminOrderListServlet: doGet called");
+        
         // 관리자 권한 체크
         User user = SessionUtil.getUser(request.getSession(false));
         if (user == null || !"ADMIN".equals(user.getRole())) {
+            System.out.println("AdminOrderListServlet: Not admin, redirecting");
             response.sendRedirect(request.getContextPath() + "/");
             return;
         }
@@ -58,12 +61,18 @@ public class AdminOrderListServlet extends HttpServlet {
             request.setAttribute("userId", userIdParam);
             
             // JSP로 포워드
+            System.out.println("AdminOrderListServlet: Forwarding to JSP");
             request.getRequestDispatcher("/jsp/admin/order/list.jsp").forward(request, response);
             
         } catch (SQLException | NumberFormatException e) {
             e.printStackTrace();
+            System.out.println("AdminOrderListServlet: Exception - " + e.getMessage());
             request.setAttribute("error", "주문 목록을 불러오는 중 오류가 발생했습니다.");
             request.getRequestDispatcher("/jsp/error/error.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("AdminOrderListServlet: Exception - " + e.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "오류 발생: " + e.getMessage());
         }
     }
 }

@@ -22,6 +22,7 @@ public class ProductListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        System.out.println("ProductListServlet: doGet called");
         try {
             ProductDAO productDAO = new ProductDAO();
             

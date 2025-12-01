@@ -61,7 +61,7 @@
                         <label class="form-label">노출 여부</label>
                         <div class="form-check form-switch mt-2">
                             <input class="form-check-input" type="checkbox" id="isPublished" name="isPublished" 
-                                   ${isEdit && product.isPublished ? 'checked' : 'checked'}>
+                                   ${isEdit && product.published ? 'checked' : 'checked'}>
                             <label class="form-check-label" for="isPublished">
                                 상품 노출
                             </label>

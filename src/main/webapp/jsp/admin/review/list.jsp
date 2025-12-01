@@ -83,9 +83,10 @@
                                         </td>
                                         <td>
                                             <%
-                                                if (review.getCreatedAt() != null) {
-                                                    java.util.Date date = new java.util.Date(review.getCreatedAt().getTime());
-                                                    request.setAttribute("reviewDate", date);
+                                                com.example.model.SakeReview reviewObj = (com.example.model.SakeReview) pageContext.getAttribute("review");
+                                                if (reviewObj != null && reviewObj.getCreatedAt() != null) {
+                                                    java.util.Date date = new java.util.Date(reviewObj.getCreatedAt().getTime());
+                                                    pageContext.setAttribute("reviewDate", date);
                                                 }
                                             %>
                                             <c:if test="${not empty reviewDate}">

@@ -20,13 +20,6 @@ import java.sql.SQLException;
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
     
-    private UserDAO userDAO;
-    
-    @Override
-    public void init() throws ServletException {
-        userDAO = new UserDAO();
-    }
-    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -65,6 +58,7 @@ public class LoginServlet extends HttpServlet {
         }
         
         try {
+            UserDAO userDAO = new UserDAO();
             // 사용자 조회
             User user = userDAO.findByUsername(username);
             

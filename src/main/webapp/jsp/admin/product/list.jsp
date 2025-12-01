@@ -115,7 +115,7 @@
                                         </td>
                                         <td>
                                             <c:choose>
-                                                <c:when test="${product.isPublished}">
+                                                <c:when test="${product.published}">
                                                     <span class="badge bg-success">노출</span>
                                                 </c:when>
                                                 <c:otherwise>

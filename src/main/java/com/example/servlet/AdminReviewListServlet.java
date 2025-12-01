@@ -24,9 +24,12 @@ public class AdminReviewListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        System.out.println("AdminReviewListServlet: doGet called");
+        
         // 관리자 권한 체크
         User user = SessionUtil.getUser(request.getSession(false));
         if (user == null || !"ADMIN".equals(user.getRole())) {
+            System.out.println("AdminReviewListServlet: Not admin, redirecting");
             response.sendRedirect(request.getContextPath() + "/");
             return;
         }
@@ -64,12 +67,18 @@ public class AdminReviewListServlet extends HttpServlet {
             request.setAttribute("rating", ratingParam);
             
             // JSP로 포워드
+            System.out.println("AdminReviewListServlet: Forwarding to JSP");
             request.getRequestDispatcher("/jsp/admin/review/list.jsp").forward(request, response);
             
         } catch (SQLException | NumberFormatException e) {
             e.printStackTrace();
+            System.out.println("AdminReviewListServlet: Exception - " + e.getMessage());
             request.setAttribute("error", "리뷰 목록을 불러오는 중 오류가 발생했습니다.");
             request.getRequestDispatcher("/jsp/error/error.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("AdminReviewListServlet: Exception - " + e.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "오류 발생: " + e.getMessage());
         }
     }
 }
