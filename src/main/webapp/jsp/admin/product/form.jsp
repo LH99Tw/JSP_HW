@@ -15,7 +15,7 @@
         </div>
     </c:if>
     
-    <form method="post" action="${pageContext.request.contextPath}/admin/product/${isEdit ? 'update' : 'create'}">
+    <form method="post" action="${pageContext.request.contextPath}/admin/product/${isEdit ? 'update' : 'create'}" enctype="multipart/form-data">
         <c:if test="${isEdit}">
             <input type="hidden" name="productId" value="${product.productId}">
         </c:if>
@@ -66,6 +66,21 @@
                                 상품 노출
                             </label>
                         </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="image" class="form-label">상품 이미지</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        <small class="form-text text-muted">JPG, JPEG, PNG, GIF 파일만 업로드 가능 (최대 5MB)</small>
+                        <c:if test="${isEdit && not empty product.imageUrl}">
+                            <div class="mt-2">
+                                <p class="mb-1">현재 이미지:</p>
+                                <img src="${pageContext.request.contextPath}${product.imageUrl}" 
+                                     alt="상품 이미지" style="max-height: 200px; max-width: 200px;" class="img-thumbnail">
+                            </div>
+                        </c:if>
                     </div>
                 </div>
             </div>

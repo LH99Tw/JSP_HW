@@ -3,13 +3,16 @@ package com.example.servlet;
 import com.example.dao.ProductDAO;
 import com.example.model.SakeProduct;
 import com.example.model.User;
+import com.example.util.FileUploadUtil;
 import com.example.util.SessionUtil;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -17,6 +20,7 @@ import java.sql.SQLException;
  * 관리자 상품 등록 서블릿
  */
 @WebServlet("/admin/product/create")
+@MultipartConfig(maxFileSize = 5 * 1024 * 1024) // 5MB
 public class AdminProductCreateServlet extends HttpServlet {
     
     @Override
@@ -58,12 +62,26 @@ public class AdminProductCreateServlet extends HttpServlet {
                 return;
             }
             
+            // 이미지 업로드 처리
+            String imageUrl = null;
+            try {
+                Part imagePart = request.getPart("image");
+                if (imagePart != null && imagePart.getSize() > 0) {
+                    String realPath = getServletContext().getRealPath("/");
+                    imageUrl = FileUploadUtil.uploadProductImage(imagePart, realPath);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                // 이미지 업로드 실패해도 상품은 등록 가능
+            }
+            
             SakeProduct product = new SakeProduct();
             product.setSakeId(sakeId);
             product.setPrice(price);
             product.setStock(stock);
             product.setPublished(isPublished);
             product.setLabel(label != null ? label.trim() : null);
+            product.setImageUrl(imageUrl);
             
             ProductDAO productDAO = new ProductDAO();
             int productId = productDAO.insert(product);

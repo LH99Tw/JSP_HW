@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,11 +54,44 @@ public class SakeListServlet extends HttpServlet {
         try {
             List<Sake> sakeList;
             
-            // 검색/필터 처리
+            // 검색/필터 처리 (검색어가 있으면 검색, 없으면 필터 적용)
             if (keyword != null && !keyword.trim().isEmpty()) {
-                sakeList = sakeDAO.search(keyword.trim());
+                // 검색어가 있으면 검색 수행
+                List<Sake> searchResults = sakeDAO.search(keyword.trim());
+                sakeList = new ArrayList<>();
+                
+                // 추가 필터 적용 (지역, 스타일)
+                for (Sake sake : searchResults) {
+                    boolean matches = true;
+                    
+                    if (region != null && !region.isEmpty()) {
+                        if (!region.equals(sake.getRegionPrefecture())) {
+                            matches = false;
+                        }
+                    }
+                    
+                    if (style != null && !style.isEmpty()) {
+                        if (!style.equals(sake.getStyle())) {
+                            matches = false;
+                        }
+                    }
+                    
+                    if (matches) {
+                        sakeList.add(sake);
+                    }
+                }
             } else if (region != null && !region.isEmpty()) {
                 sakeList = sakeDAO.findByRegion(region);
+                // 스타일 필터 추가 적용
+                if (style != null && !style.isEmpty()) {
+                    List<Sake> filtered = new ArrayList<>();
+                    for (Sake sake : sakeList) {
+                        if (style.equals(sake.getStyle())) {
+                            filtered.add(sake);
+                        }
+                    }
+                    sakeList = filtered;
+                }
             } else if (style != null && !style.isEmpty()) {
                 sakeList = sakeDAO.findByStyle(style);
             } else {

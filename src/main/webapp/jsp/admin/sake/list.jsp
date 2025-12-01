@@ -29,15 +29,22 @@
                     <label for="style" class="form-label">스타일</label>
                     <select class="form-select" id="style" name="style">
                         <option value="">전체</option>
-                        <optgroup label="준마이 계열">
+                        <optgroup label="정미율 기준 분류 - 준마이 계열">
                             <option value="준마이다이긴조" ${style == '준마이다이긴조' ? 'selected' : ''}>준마이다이긴조</option>
                             <option value="준마이긴조" ${style == '준마이긴조' ? 'selected' : ''}>준마이긴조</option>
                             <option value="준마이" ${style == '준마이' ? 'selected' : ''}>준마이</option>
                         </optgroup>
-                        <optgroup label="혼조조 계열">
+                        <optgroup label="정미율 기준 분류 - 혼조조 계열">
                             <option value="다이긴조" ${style == '다이긴조' ? 'selected' : ''}>다이긴조</option>
                             <option value="긴조" ${style == '긴조' ? 'selected' : ''}>긴조</option>
                             <option value="혼조조" ${style == '혼조조' ? 'selected' : ''}>혼조조</option>
+                        </optgroup>
+                        <optgroup label="제조 방식별 분류">
+                            <option value="나마자케" ${style == '나마자케' ? 'selected' : ''}>나마자케</option>
+                            <option value="나마초조" ${style == '나마초조' ? 'selected' : ''}>나마초조</option>
+                            <option value="나마즈메" ${style == '나마즈메' ? 'selected' : ''}>나마즈메</option>
+                            <option value="니고리자케" ${style == '니고리자케' ? 'selected' : ''}>니고리자케</option>
+                            <option value="키죠슈" ${style == '키죠슈' ? 'selected' : ''}>키죠슈</option>
                         </optgroup>
                     </select>
                 </div>

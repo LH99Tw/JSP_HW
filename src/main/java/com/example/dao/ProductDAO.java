@@ -16,7 +16,7 @@ public class ProductDAO {
      * 전체 상품 목록 조회 (노출된 상품만, 사케 정보 포함)
      */
     public List<SakeProduct> findAll() throws SQLException {
-        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, s.thumbnail_path as image_url " +
+        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, COALESCE(sp.image_url, s.thumbnail_path) as image_url " +
                      "FROM sake_product sp " +
                      "JOIN sake s ON sp.sake_id = s.sake_id " +
                      "WHERE sp.is_published = true ORDER BY sp.created_at DESC";
@@ -46,7 +46,7 @@ public class ProductDAO {
      * 전체 상품 목록 조회 (관리자용 - 모든 상품, 사케 정보 포함)
      */
     public List<SakeProduct> findAllWithSakeInfo() throws SQLException {
-        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, s.thumbnail_path as image_url " +
+        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, COALESCE(sp.image_url, s.thumbnail_path) as image_url " +
                      "FROM sake_product sp " +
                      "JOIN sake s ON sp.sake_id = s.sake_id " +
                      "ORDER BY sp.created_at DESC";
@@ -83,7 +83,7 @@ public class ProductDAO {
      * 지역별 상품 조회
      */
     public List<SakeProduct> findByRegion(String region) throws SQLException {
-        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, s.thumbnail_path as image_url " +
+        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, COALESCE(sp.image_url, s.thumbnail_path) as image_url " +
                      "FROM sake_product sp " +
                      "JOIN sake s ON sp.sake_id = s.sake_id " +
                      "WHERE sp.is_published = true AND s.region_prefecture = ? ORDER BY sp.created_at DESC";
@@ -114,7 +114,7 @@ public class ProductDAO {
      * 스타일별 상품 조회
      */
     public List<SakeProduct> findByStyle(String style) throws SQLException {
-        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, s.thumbnail_path as image_url " +
+        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, COALESCE(sp.image_url, s.thumbnail_path) as image_url " +
                      "FROM sake_product sp " +
                      "JOIN sake s ON sp.sake_id = s.sake_id " +
                      "WHERE sp.is_published = true AND s.style = ? ORDER BY sp.created_at DESC";
@@ -145,7 +145,7 @@ public class ProductDAO {
      * 검색 (상품명 또는 브랜드)
      */
     public List<SakeProduct> search(String keyword) throws SQLException {
-        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, s.thumbnail_path as image_url " +
+        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, COALESCE(sp.image_url, s.thumbnail_path) as image_url " +
                      "FROM sake_product sp " +
                      "JOIN sake s ON sp.sake_id = s.sake_id " +
                      "WHERE sp.is_published = true AND (s.name_ko LIKE ? OR s.brand LIKE ?) " +
@@ -179,7 +179,7 @@ public class ProductDAO {
      * 상품 ID로 상세 조회 (사케 정보 포함)
      */
     public SakeProduct findById(int productId) throws SQLException {
-        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, s.thumbnail_path as image_url " +
+        String sql = "SELECT sp.*, s.name_ko as sake_name, s.brand, s.region_prefecture as region, s.style, COALESCE(sp.image_url, s.thumbnail_path) as image_url " +
                      "FROM sake_product sp " +
                      "JOIN sake s ON sp.sake_id = s.sake_id " +
                      "WHERE sp.product_id = ?";
@@ -237,8 +237,8 @@ public class ProductDAO {
      * 상품 등록
      */
     public int insert(SakeProduct product) throws SQLException {
-        String sql = "INSERT INTO sake_product (sake_id, price, stock, is_published, label) " +
-                     "VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO sake_product (sake_id, price, stock, is_published, label, image_url) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
         
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -252,6 +252,7 @@ public class ProductDAO {
             pstmt.setInt(3, product.getStock());
             pstmt.setBoolean(4, product.isPublished());
             pstmt.setString(5, product.getLabel());
+            pstmt.setString(6, product.getImageUrl());
             
             int result = pstmt.executeUpdate();
             
@@ -273,7 +274,7 @@ public class ProductDAO {
      * 상품 정보 수정
      */
     public boolean update(SakeProduct product) throws SQLException {
-        String sql = "UPDATE sake_product SET price = ?, stock = ?, is_published = ?, label = ? " +
+        String sql = "UPDATE sake_product SET price = ?, stock = ?, is_published = ?, label = ?, image_url = ? " +
                      "WHERE product_id = ?";
         
         Connection conn = null;
@@ -286,7 +287,8 @@ public class ProductDAO {
             pstmt.setInt(2, product.getStock());
             pstmt.setBoolean(3, product.isPublished());
             pstmt.setString(4, product.getLabel());
-            pstmt.setInt(5, product.getProductId());
+            pstmt.setString(5, product.getImageUrl());
+            pstmt.setInt(6, product.getProductId());
             
             return pstmt.executeUpdate() > 0;
         } finally {

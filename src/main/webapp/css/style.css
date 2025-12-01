@@ -91,6 +91,27 @@ header .btn {
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+/* 사케 목록 카드 스타일 (세로 이미지용) */
+.sake-list .card-img-top,
+.product-list .card-img-top {
+    background-color: #f8f9fa;
+}
+
+.sake-list .card-img-top img,
+.product-list .card-img-top img {
+    object-fit: cover;
+    object-position: center;
+}
+
+/* 반응형: 한 줄에 5개 제품 표시 */
+@media (min-width: 992px) {
+    .sake-list .col-lg-2,
+    .product-list .col-lg-2 {
+        flex: 0 0 20%;
+        max-width: 20%;
+    }
+}
+
 /* 버튼 스타일 */
 .btn-primary {
     background-color: #3498db;

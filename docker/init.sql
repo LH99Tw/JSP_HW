@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS sake_product (
     stock INTEGER DEFAULT 0 CHECK (stock >= 0),
     is_published BOOLEAN DEFAULT TRUE,
     label VARCHAR(50), -- 한정판/프리미엄 등 태그
+    image_url VARCHAR(500), -- 상품 이미지 경로
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

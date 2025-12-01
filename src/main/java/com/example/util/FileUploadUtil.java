@@ -89,6 +89,46 @@ public class FileUploadUtil {
     }
     
     /**
+     * 단일 이미지 파일 업로드 (상품용)
+     */
+    public static String uploadProductImage(Part part, String realPath) throws IOException {
+        if (part == null || part.getSubmittedFileName() == null || 
+            part.getSubmittedFileName().isEmpty() || part.getSize() == 0) {
+            return null;
+        }
+        
+        // 업로드 디렉토리 생성
+        String uploadDir = "/uploads/product/";
+        String uploadPath = realPath + uploadDir;
+        File uploadDirFile = new File(uploadPath);
+        if (!uploadDirFile.exists()) {
+            uploadDirFile.mkdirs();
+        }
+        
+        // 파일 크기 체크
+        if (part.getSize() > MAX_FILE_SIZE) {
+            throw new IOException("파일 크기가 너무 큽니다. (최대 5MB)");
+        }
+        
+        // 파일 확장자 체크
+        String fileName = part.getSubmittedFileName();
+        String extension = fileName.substring(fileName.lastIndexOf("."));
+        if (!isValidImageExtension(extension)) {
+            throw new IOException("지원하지 않는 이미지 형식입니다. (jpg, jpeg, png, gif만 가능)");
+        }
+        
+        // UUID로 파일명 생성
+        String storedFileName = UUID.randomUUID().toString() + extension;
+        String filePath = uploadPath + storedFileName;
+        
+        // 파일 저장
+        try (InputStream input = part.getInputStream()) {
+            Files.copy(input, new File(filePath).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            return uploadDir + storedFileName;
+        }
+    }
+    
+    /**
      * 파일 삭제
      */
     public static boolean deleteFile(String filePath, String realPath) {

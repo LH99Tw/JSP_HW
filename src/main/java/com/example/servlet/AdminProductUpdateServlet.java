@@ -3,13 +3,16 @@ package com.example.servlet;
 import com.example.dao.ProductDAO;
 import com.example.model.SakeProduct;
 import com.example.model.User;
+import com.example.util.FileUploadUtil;
 import com.example.util.SessionUtil;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -17,6 +20,7 @@ import java.sql.SQLException;
  * 관리자 상품 수정 서블릿
  */
 @WebServlet("/admin/product/update")
+@MultipartConfig(maxFileSize = 5 * 1024 * 1024) // 5MB
 public class AdminProductUpdateServlet extends HttpServlet {
     
     @Override
@@ -70,6 +74,25 @@ public class AdminProductUpdateServlet extends HttpServlet {
             if (product == null) {
                 response.sendRedirect(request.getContextPath() + "/admin/product/list");
                 return;
+            }
+            
+            // 이미지 업로드 처리 (새 이미지가 업로드된 경우에만)
+            try {
+                Part imagePart = request.getPart("image");
+                if (imagePart != null && imagePart.getSize() > 0) {
+                    String realPath = getServletContext().getRealPath("/");
+                    // 기존 이미지 삭제
+                    if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+                        FileUploadUtil.deleteFile(product.getImageUrl(), realPath);
+                    }
+                    // 새 이미지 업로드
+                    String imageUrl = FileUploadUtil.uploadProductImage(imagePart, realPath);
+                    product.setImageUrl(imageUrl);
+                }
+                // 이미지가 업로드되지 않았으면 기존 이미지 유지
+            } catch (Exception e) {
+                e.printStackTrace();
+                // 이미지 업로드 실패해도 상품 정보는 업데이트 가능
             }
             
             // 상품 정보 업데이트
