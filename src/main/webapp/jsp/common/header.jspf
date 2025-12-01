@@ -137,24 +137,6 @@
                 </ul>
                 <!-- 언어 선택 -->
                 <div class="d-flex align-items-center">
-                    <%
-                        // 쿠키에서 언어 읽기
-                        String currentLang = "ko";
-                        Cookie[] cookies = request.getCookies();
-                        if (cookies != null) {
-                            for (Cookie cookie : cookies) {
-                                if ("lang".equals(cookie.getName())) {
-                                    currentLang = cookie.getValue();
-                                    break;
-                                }
-                            }
-                        }
-                        // 세션에서도 확인
-                        if (session.getAttribute("lang") != null) {
-                            currentLang = (String) session.getAttribute("lang");
-                        }
-                        request.setAttribute("currentLang", currentLang);
-                    %>
                     <select class="form-select form-select-sm" id="languageSelect" onchange="changeLanguage(this.value)" style="width: auto;">
                         <option value="ko" ${currentLang == 'ko' ? 'selected' : ''}>한국어</option>
                         <option value="en" ${currentLang == 'en' ? 'selected' : ''}>English</option>

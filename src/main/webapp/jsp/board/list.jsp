@@ -9,61 +9,61 @@
         <li class="nav-item" role="presentation">
             <a class="nav-link ${category == '전체글' ? 'active' : ''}" 
                href="${pageContext.request.contextPath}/board/list?category=전체글&sortBy=${sortBy}">
-                전체글
+                <fmt:message key="board.category.all" bundle="${messages}"/>
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link ${category == '인기글' ? 'active' : ''}" 
                href="${pageContext.request.contextPath}/board/list?category=전체글&sortBy=인기글">
-                인기글
+                <fmt:message key="board.category.popular" bundle="${messages}"/>
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link ${category == '공지' ? 'active' : ''}" 
                href="${pageContext.request.contextPath}/board/list?category=공지&sortBy=${sortBy}">
-                공지
+                <fmt:message key="board.category.notice" bundle="${messages}"/>
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link ${category == '일반' ? 'active' : ''}" 
                href="${pageContext.request.contextPath}/board/list?category=일반&sortBy=${sortBy}">
-                일반
+                <fmt:message key="board.category.general" bundle="${messages}"/>
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link ${category == '리뷰(술)' ? 'active' : ''}" 
                href="${pageContext.request.contextPath}/board/list?category=리뷰(술)&sortBy=${sortBy}">
-                리뷰(술)
+                <fmt:message key="board.category.review" bundle="${messages}"/>
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link ${category == '질문' ? 'active' : ''}" 
                href="${pageContext.request.contextPath}/board/list?category=질문&sortBy=${sortBy}">
-                질문
+                <fmt:message key="board.category.question" bundle="${messages}"/>
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link ${category == '주점' ? 'active' : ''}" 
                href="${pageContext.request.contextPath}/board/list?category=주점&sortBy=${sortBy}">
-                주점
+                <fmt:message key="board.category.pub" bundle="${messages}"/>
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link ${category == '주판점' ? 'active' : ''}" 
                href="${pageContext.request.contextPath}/board/list?category=주판점&sortBy=${sortBy}">
-                주판점
+                <fmt:message key="board.category.shop" bundle="${messages}"/>
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link ${category == '양조장' ? 'active' : ''}" 
                href="${pageContext.request.contextPath}/board/list?category=양조장&sortBy=${sortBy}">
-                양조장
+                <fmt:message key="board.category.brewery" bundle="${messages}"/>
             </a>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link ${category == '여행후기' ? 'active' : ''}" 
                href="${pageContext.request.contextPath}/board/list?category=여행후기&sortBy=${sortBy}">
-                여행후기
+                <fmt:message key="board.category.travel" bundle="${messages}"/>
             </a>
         </li>
     </ul>
@@ -73,18 +73,19 @@
         <div class="d-flex align-items-center">
             <select class="form-select form-select-sm me-2" style="width: auto;" 
                     onchange="location.href='${pageContext.request.contextPath}/board/list?category=${category}&sortBy=' + this.value">
-                <option value="전체글" ${sortBy == '전체글' ? 'selected' : ''}>최신순</option>
-                <option value="인기글" ${sortBy == '인기글' ? 'selected' : ''}>인기글</option>
-                <option value="조회순" ${sortBy == '조회순' ? 'selected' : ''}>조회순</option>
+                <option value="전체글" ${sortBy == '전체글' ? 'selected' : ''}><fmt:message key="board.sort.latest" bundle="${messages}"/></option>
+                <option value="인기글" ${sortBy == '인기글' ? 'selected' : ''}><fmt:message key="board.sort.popular" bundle="${messages}"/></option>
+                <option value="조회순" ${sortBy == '조회순' ? 'selected' : ''}><fmt:message key="board.sort.views" bundle="${messages}"/></option>
             </select>
-            <select class="form-select form-select-sm" style="width: auto;">
-                <option>50개</option>
-                <option>30개</option>
-                <option>20개</option>
+            <select class="form-select form-select-sm" style="width: auto;" 
+                    onchange="location.href='${pageContext.request.contextPath}/board/list?category=${category}&sortBy=${sortBy}&size=' + this.value">
+                <option value="50" ${size == 50 ? 'selected' : ''}><fmt:message key="board.size.50" bundle="${messages}"/></option>
+                <option value="30" ${size == 30 ? 'selected' : ''}><fmt:message key="board.size.30" bundle="${messages}"/></option>
+                <option value="20" ${size == 20 ? 'selected' : ''}><fmt:message key="board.size.20" bundle="${messages}"/></option>
             </select>
         </div>
         <a href="${pageContext.request.contextPath}/board/write" class="btn btn-primary">
-            <i class="fas fa-pen"></i> 글쓰기
+            <i class="fas fa-pen"></i> <fmt:message key="board.write_post" bundle="${messages}"/>
         </a>
     </div>
     
@@ -92,20 +93,20 @@
     <table class="table table-hover">
         <thead class="table-light">
             <tr>
-                <th style="width: 60px;">번호</th>
-                <th style="width: 80px;">말머리</th>
-                <th>제목</th>
-                <th style="width: 100px;">글쓴이</th>
-                <th style="width: 120px;">작성일</th>
-                <th style="width: 70px;">조회</th>
-                <th style="width: 70px;">추천</th>
+                <th style="width: 60px;"><fmt:message key="board.table.number" bundle="${messages}"/></th>
+                <th style="width: 80px;"><fmt:message key="board.table.prefix" bundle="${messages}"/></th>
+                <th><fmt:message key="board.table.title" bundle="${messages}"/></th>
+                <th style="width: 100px;"><fmt:message key="board.table.author" bundle="${messages}"/></th>
+                <th style="width: 120px;"><fmt:message key="board.table.date" bundle="${messages}"/></th>
+                <th style="width: 70px;"><fmt:message key="board.table.views" bundle="${messages}"/></th>
+                <th style="width: 70px;"><fmt:message key="board.table.likes" bundle="${messages}"/></th>
             </tr>
         </thead>
         <tbody>
             <c:choose>
                 <c:when test="${empty posts}">
                     <tr>
-                        <td colspan="7" class="text-center py-4">게시글이 없습니다.</td>
+                        <td colspan="7" class="text-center py-4"><fmt:message key="board.empty" bundle="${messages}"/></td>
                     </tr>
                 </c:when>
                 <c:otherwise>
@@ -114,7 +115,7 @@
                             <td>
                                 <c:choose>
                                     <c:when test="${post.notice}">
-                                        <span class="badge bg-danger">공지</span>
+                                        <span class="badge bg-danger"><fmt:message key="board.category.notice" bundle="${messages}"/></span>
                                     </c:when>
                                     <c:otherwise>
                                         ${post.postId}
@@ -176,7 +177,7 @@
                 <li class="page-item">
                     <a class="page-link" 
                        href="${pageContext.request.contextPath}/board/list?category=${category}&sortBy=${sortBy}&page=${page - 1}">
-                        이전
+                        <fmt:message key="board.pagination.prev" bundle="${messages}"/>
                     </a>
                 </li>
             </c:if>
@@ -195,7 +196,7 @@
                 <li class="page-item">
                     <a class="page-link" 
                        href="${pageContext.request.contextPath}/board/list?category=${category}&sortBy=${sortBy}&page=${page + 1}">
-                        다음
+                        <fmt:message key="board.pagination.next" bundle="${messages}"/>
                     </a>
                 </li>
             </c:if>
