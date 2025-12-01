@@ -15,9 +15,6 @@ COPY src/main/webapp/WEB-INF/lib/ /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/
 # classes 디렉토리 생성 (Tomcat이 자동으로 컴파일하거나, 미리 컴파일된 클래스 사용)
 RUN mkdir -p /usr/local/tomcat/webapps/ROOT/WEB-INF/classes
 
-# 리소스 파일 복사 (i18n properties 파일 등)
-COPY src/main/resources/ /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/
-
 # Java 클래스 파일이 있으면 복사 (선택사항 - 없으면 Tomcat이 자동 컴파일)
 # 주의: classes 디렉토리가 비어있으면 이 COPY는 실패하므로, 
 # 실제로 클래스 파일이 있을 때만 사용하거나 스크립트로 처리
