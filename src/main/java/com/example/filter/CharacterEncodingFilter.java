@@ -24,7 +24,7 @@ public class CharacterEncodingFilter implements Filter {
             throws IOException, ServletException {
         request.setCharacterEncoding(encoding);
         response.setCharacterEncoding(encoding);
-        response.setContentType("text/html; charset=" + encoding);
+        // Content-Type은 각 JSP/Servlet에서 설정하도록 함 (중복 방지)
         
         chain.doFilter(request, response);
     }

@@ -6,16 +6,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSP Homework</title>
+    <title>SAKETIME - 사케 커뮤니티 & 마켓</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <header>
-        <h1>JSP Homework Application</h1>
-        <nav>
-            <a href="${pageContext.request.contextPath}/">홈</a>
-            <a href="${pageContext.request.contextPath}/jsp/user/login.jsp">로그인</a>
-            <a href="${pageContext.request.contextPath}/jsp/user/register.jsp">회원가입</a>
-        </nav>
+    <!-- 상단 배너 -->
+    <div class="top-banner bg-light py-2">
+        <div class="container">
+            <div class="text-center text-muted small">
+                일본 사케 전문 커뮤니티 & 마켓 / 전 상품 세금 및 배송비 포함
+            </div>
+        </div>
+    </div>
+    
+    <!-- 메인 헤더 -->
+    <header class="bg-white shadow-sm">
+        <div class="container">
+            <div class="row align-items-center py-2">
+                <div class="col-md-3">
+                    <a href="${pageContext.request.contextPath}/" class="text-decoration-none">
+                        <h2 class="mb-0 text-primary">SAKETIME</h2>
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <form class="d-flex" action="${pageContext.request.contextPath}/sake/search" method="get">
+                        <input class="form-control me-2" type="search" name="keyword" 
+                               placeholder="브랜드 및 상품 정보 검색" aria-label="Search">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center justify-content-end gap-2">
+                        <c:choose>
+                            <c:when test="${not empty sessionScope.user}">
+                                <a href="${pageContext.request.contextPath}/mypage" class="btn btn-link text-decoration-none p-0">
+                                    <i class="fas fa-user"></i> 마이페이지
+                                </a>
+                                <span class="text-muted">|</span>
+                                <a href="${pageContext.request.contextPath}/cart" class="btn btn-link text-decoration-none p-0">
+                                    <i class="fas fa-shopping-cart"></i> 장바구니
+                                </a>
+                                <span class="text-muted">|</span>
+                                <a href="${pageContext.request.contextPath}/logout" class="btn btn-link text-decoration-none p-0">
+                                    로그아웃
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="${pageContext.request.contextPath}/login" class="btn btn-link text-decoration-none p-0">
+                                    <i class="fas fa-user"></i> 마이페이지
+                                </a>
+                                <span class="text-muted">|</span>
+                                <a href="${pageContext.request.contextPath}/login" class="btn btn-link text-decoration-none p-0">
+                                    로그인
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+            </div>
+        </div>
     </header>
-
+    
+    <!-- 네비게이션 바 -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <div class="container">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/">홈</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/sake/list">모든 제품</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="regionDropdown" role="button" data-bs-toggle="dropdown">
+                            원산지
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/sake/list?region=홋카이도">홋카이도</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/sake/list?region=니가타">니가타</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/sake/list?region=야마가타">야마가타</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/sake/list?region=후쿠시마">후쿠시마</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="styleDropdown" role="button" data-bs-toggle="dropdown">
+                            타입
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/sake/list?style=준마이다이긴조">준마이다이긴조</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/sake/list?style=준마이긴조">준마이긴조</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/sake/list?style=준마이">준마이</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/sake/list?style=다이긴조">다이긴조</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/sake/list?style=긴조">긴조</a></li>
+                            <li><a class="dropdown-item" href="${pageContext.request.contextPath}/sake/list?style=혼조조">혼조조</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/product/list">마켓</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/board/list">커뮤니티</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/recommend">추천</a>
+                    </li>
+                    <c:if test="${sessionScope.user.role == 'ADMIN'}">
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="${pageContext.request.contextPath}/admin/dashboard">관리자</a>
+                        </li>
+                    </c:if>
+                </ul>
+                <!-- 언어 선택 -->
+                <div class="d-flex align-items-center">
+                    <%
+                        // 쿠키에서 언어 읽기
+                        String currentLang = "ko";
+                        Cookie[] cookies = request.getCookies();
+                        if (cookies != null) {
+                            for (Cookie cookie : cookies) {
+                                if ("lang".equals(cookie.getName())) {
+                                    currentLang = cookie.getValue();
+                                    break;
+                                }
+                            }
+                        }
+                        // 세션에서도 확인
+                        if (session.getAttribute("lang") != null) {
+                            currentLang = (String) session.getAttribute("lang");
+                        }
+                        request.setAttribute("currentLang", currentLang);
+                    %>
+                    <select class="form-select form-select-sm" id="languageSelect" onchange="changeLanguage(this.value)" style="width: auto;">
+                        <option value="ko" ${currentLang == 'ko' ? 'selected' : ''}>한국어</option>
+                        <option value="en" ${currentLang == 'en' ? 'selected' : ''}>English</option>
+                        <option value="ja" ${currentLang == 'ja' ? 'selected' : ''}>日本語</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <script>
+        function changeLanguage(lang) {
+            window.location.href = '${pageContext.request.contextPath}/language/change?lang=' + lang + '&redirect=' + encodeURIComponent(window.location.pathname);
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -3,12 +3,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
          http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
-         version="4.0">
+         version="4.0"
+         metadata-complete="false">
     
     <display-name>JSP Homework Application</display-name>
     
-    <!-- 인코딩 필터 (필터 클래스가 컴파일되면 주석 해제) -->
-    <!--
+    <!-- 인코딩 필터 -->
     <filter>
         <filter-name>CharacterEncodingFilter</filter-name>
         <filter-class>com.example.filter.CharacterEncodingFilter</filter-class>
@@ -21,7 +21,29 @@
         <filter-name>CharacterEncodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    -->
+    
+    <!-- 인증 필터 -->
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>com.example.filter.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/mypage/*</url-pattern>
+        <url-pattern>/review/*</url-pattern>
+        <url-pattern>/cart/*</url-pattern>
+        <url-pattern>/order/*</url-pattern>
+    </filter-mapping>
+    
+    <!-- 관리자 권한 필터 -->
+    <filter>
+        <filter-name>AdminAuthFilter</filter-name>
+        <filter-class>com.example.filter.AdminAuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AdminAuthFilter</filter-name>
+        <url-pattern>/admin/*</url-pattern>
+    </filter-mapping>
     
     <!-- 세션 타임아웃 설정 (30분) -->
     <session-config>
@@ -55,10 +77,10 @@
     <jsp-config>
         <jsp-property-group>
             <url-pattern>*.jsp</url-pattern>
+            <url-pattern>*.jspf</url-pattern>
             <page-encoding>UTF-8</page-encoding>
             <scripting-invalid>false</scripting-invalid>
-            <include-prelude>/jsp/common/header.jspf</include-prelude>
-            <include-coda>/jsp/common/footer.jspf</include-coda>
+            <!-- include-prelude와 include-coda는 제거 (각 JSP에서 명시적으로 include) -->
         </jsp-property-group>
     </jsp-config>
     

@@ -12,15 +12,30 @@ COPY src/main/webapp/ /usr/local/tomcat/webapps/ROOT/
 # 필요한 라이브러리 복사 (JSTL, JDBC 드라이버 등)
 COPY src/main/webapp/WEB-INF/lib/ /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/
 
-# classes 디렉토리 생성 (Tomcat이 자동으로 컴파일하거나, 미리 컴파일된 클래스 사용)
+# classes 디렉토리 생성
 RUN mkdir -p /usr/local/tomcat/webapps/ROOT/WEB-INF/classes
 
-# Java 클래스 파일이 있으면 복사 (선택사항 - 없으면 Tomcat이 자동 컴파일)
-# 주의: classes 디렉토리가 비어있으면 이 COPY는 실패하므로, 
-# 실제로 클래스 파일이 있을 때만 사용하거나 스크립트로 처리
+# Java 클래스 파일이 있으면 복사
+COPY src/main/webapp/WEB-INF/classes/ /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/
+
+# Java 소스 파일 복사 (컴파일용)
+COPY src/main/java/ /tmp/src/
+
+# Java 소스 파일 컴파일 (모든 파일을 한 번에 컴파일)
+RUN if [ -d /tmp/src ] && [ "$(ls -A /tmp/src)" ]; then \
+        find /tmp/src -name "*.java" -type f > /tmp/java_files.txt && \
+        if [ -s /tmp/java_files.txt ]; then \
+            javac -cp "/usr/local/tomcat/lib/*:/usr/local/tomcat/webapps/ROOT/WEB-INF/lib/*" \
+                  -d /usr/local/tomcat/webapps/ROOT/WEB-INF/classes \
+                  @/tmp/java_files.txt 2>&1 || echo "Warning: Some files failed to compile"; \
+        fi; \
+    fi && \
+    rm -rf /tmp/src /tmp/java_files.txt
 
 # Tomcat 설정
-ENV CATALINA_OPTS="-Dfile.encoding=UTF-8 -Duser.timezone=Asia/Seoul"
+ENV CATALINA_OPTS="-Dfile.encoding=UTF-8 -Duser.timezone=Asia/Seoul -Djava.awt.headless=true"
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
 EXPOSE 8080
 

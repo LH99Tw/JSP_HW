@@ -93,6 +93,76 @@ async def classify(request: PredictRequest):
     }
 
 
+# 사케 추천 요청 모델
+class RecommendRequest(BaseModel):
+    user_id: int
+    preferences: Optional[dict] = None
+
+
+class RecommendResponse(BaseModel):
+    sake_ids: list[int]
+    reason: Optional[str] = None
+
+
+@app.post("/api/v1/recommend", response_model=RecommendResponse)
+async def recommend(request: RecommendRequest):
+    """사케 추천 API (더미 버전)"""
+    # TODO: 실제 ML 모델 연동
+    # 현재는 더미 데이터 반환
+    # 실제로는 사용자의 리뷰 히스토리, 선호도 등을 기반으로 추천
+    
+    # 더미 추천: 인기 사케 ID 1-5 반환
+    dummy_recommendations = [1, 2, 3, 4, 5]
+    
+    return RecommendResponse(
+        sake_ids=dummy_recommendations,
+        reason="Based on your preferences and popular items"
+    )
+
+
+# 맛 분석 요청 모델
+class AnalyzeTasteRequest(BaseModel):
+    review_text: str
+
+
+class AnalyzeTasteResponse(BaseModel):
+    tags: list[str]
+    confidence: Optional[float] = None
+
+
+@app.post("/api/v1/analyze-taste", response_model=AnalyzeTasteResponse)
+async def analyze_taste(request: AnalyzeTasteRequest):
+    """리뷰 텍스트 분석 - 맛 태그 추출 (더미 버전)"""
+    # TODO: 실제 ML 모델 연동 (NLP, 키워드 추출 등)
+    # 현재는 키워드 기반 더미 로직
+    
+    review_text = request.review_text.lower()
+    tags = []
+    
+    # 키워드 기반 태그 추출 (더미)
+    taste_keywords = {
+        "sweet": ["달콤", "sweet", "甘い", "아마구치"],
+        "dry": ["드라이", "dry", "辛口", "카라구치"],
+        "fruity": ["과일", "fruit", "フルーティ", "프루티"],
+        "floral": ["꽃", "flower", "フローラル", "플로럴"],
+        "rich": ["풍부", "rich", "豊か", "리치"],
+        "light": ["가벼운", "light", "軽い", "라이트"]
+    }
+    
+    for tag, keywords in taste_keywords.items():
+        if any(keyword in review_text for keyword in keywords):
+            tags.append(tag)
+    
+    # 태그가 없으면 기본 태그 반환
+    if not tags:
+        tags = ["balanced"]
+    
+    return AnalyzeTasteResponse(
+        tags=tags,
+        confidence=0.8
+    )
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
