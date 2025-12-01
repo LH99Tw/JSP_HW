@@ -9,17 +9,11 @@
         return;
     }
     
-    // 파일 목록 로드
-    com.example.model.User user = (com.example.model.User) session.getAttribute("user");
-    java.util.List<com.example.model.FileInfo> files = null;
-    try {
-        com.example.dao.FileDAO fileDAO = new com.example.dao.FileDAO();
-        files = fileDAO.findByUserId(user.getUserId());
-    } catch (java.sql.SQLException e) {
-        e.printStackTrace();
-        request.setAttribute("error", "파일 목록을 불러오는 중 오류가 발생했습니다.");
+    com.example.model.FileInfo fileInfo = (com.example.model.FileInfo) request.getAttribute("fileInfo");
+    if (fileInfo == null) {
+        response.sendRedirect(request.getContextPath() + "/");
+        return;
     }
-    request.setAttribute("files", files);
     
     // 언어 설정
     String language = (String) session.getAttribute("language");
@@ -60,7 +54,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>파일 탐색기 - JSP Homework</title>
+    <title>파일 편집 - ${fileInfo.originalFilename}</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/vscode-style.css">
 </head>
@@ -72,7 +66,6 @@
                    id="search-input"
                    class="search-box" 
                    placeholder="<fmt:message key="search_placeholder" bundle="${messages}" /> (예: setting:--)"
-                   value="${param.q != null ? param.q : ''}"
                    onclick="openSearchOverlay()">
             <div class="menu-items">
                 <span>${sessionScope.username}</span>
@@ -105,7 +98,7 @@
         <div class="vscode-main">
             <!-- Activity Bar (좌측 최외곽) -->
             <div class="activity-bar">
-                <button class="activity-item active" data-activity="explorer" title="탐색기" onclick="switchActivity('explorer')">
+                <button class="activity-item" data-activity="explorer" title="탐색기" onclick="window.location.href='${pageContext.request.contextPath}/'">
                     <span class="icon">📁</span>
                 </button>
                 <button class="activity-item" data-activity="visualization" title="시각화" onclick="switchActivity('visualization')">
@@ -118,98 +111,61 @@
             
             <!-- 좌측 사이드바 -->
             <div class="vscode-sidebar">
-                <!-- 탐색기 Activity -->
                 <div class="sidebar-content" id="explorer-content">
                     <div class="sidebar-header">
-                        <span>탐색기</span>
-                        <div>
-                            <button class="sidebar-action" title="새 파일" onclick="createNewFile()" id="new-file-btn">📄</button>
-                            <button class="sidebar-action" title="새 폴더" onclick="createNewFolder()" id="new-folder-btn">📁</button>
-                            <button class="sidebar-action" title="새로고침" onclick="loadFileList()">🔄</button>
-                        </div>
-                    </div>
-                    <div style="flex: 1; overflow-y: auto; padding: 0.5rem; position: relative;" id="file-tree-container">
-                        <ul class="file-tree" id="file-tree">
-                            <li class="file-tree-item folder-item" onclick="loadAllFiles()">
-                                <span class="file-icon" id="root-folder-icon"></span>
-                                <span class="name">모든 파일</span>
-                            </li>
-                            <c:forEach var="file" items="${files}">
-                                <li class="file-tree-item file-item" data-file-id="${file.uploadId}" data-file-name="${file.originalFilename}" onclick="openFileFromElement(this)">
-                                    <span class="file-icon" data-filename="${file.originalFilename}"></span>
-                                    <span class="name">${file.originalFilename}</span>
-                                </li>
-                            </c:forEach>
-                            <c:if test="${empty files}">
-                                <li style="padding: 1rem; color: var(--vscode-text-secondary); text-align: center;">
-                                    <fmt:message key="no_files" bundle="${messages}" />
-                                </li>
-                            </c:if>
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- 시각화 Activity -->
-                <div class="sidebar-content" id="visualization-content" style="display: none;">
-                    <div class="sidebar-header">
-                        <span>시각화</span>
+                        <span>파일 편집</span>
                     </div>
                     <div style="padding: 1rem; color: var(--vscode-text-secondary);">
-                        <p><fmt:message key="visualization" bundle="${messages}" /> 기능은 Phase 3에서 구현됩니다.</p>
-                    </div>
-                </div>
-                
-                <!-- 설정 Activity -->
-                <div class="sidebar-content" id="settings-content" style="display: none;">
-                    <div class="sidebar-header">
-                        <span>설정</span>
-                    </div>
-                    <div style="padding: 1rem;">
-                        <div style="margin-bottom: 1.5rem;">
-                            <h3 style="font-size: 13px; margin-bottom: 0.5rem; color: var(--vscode-text);"><fmt:message key="language" bundle="${messages}" /></h3>
-                            <form method="post" action="${pageContext.request.contextPath}/language">
-                                <select name="lang" onchange="this.form.submit()" 
-                                        style="width: 100%; padding: 0.5rem; background-color: var(--vscode-bg); color: var(--vscode-text); border: 1px solid var(--vscode-border); border-radius: 2px;">
-                                    <option value="ko" ${language == 'ko' ? 'selected' : ''}>한국어</option>
-                                    <option value="en" ${language == 'en' ? 'selected' : ''}>English</option>
-                                    <option value="ja" ${language == 'ja' ? 'selected' : ''}>日本語</option>
-                                </select>
-                            </form>
-                        </div>
+                        <p>${fileInfo.originalFilename}</p>
                     </div>
                 </div>
             </div>
             
             <!-- 중앙 작업 영역 -->
             <div class="vscode-workspace">
-                <!-- 탭 바 -->
                 <div class="vscode-tabs" id="tabs-container">
-                    <!-- 탭은 JavaScript로 동적으로 추가됨 -->
+                    <div class="vscode-tab active">
+                        <span>${fileInfo.originalFilename}</span>
+                    </div>
                 </div>
-                
-                <!-- 에디터/뷰어 영역 -->
                 <div class="vscode-editor" id="editor-container">
-                    <c:choose>
-                        <c:when test="${empty files}">
-                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--vscode-text-secondary);">
-                                <p style="font-size: 18px; margin-bottom: 1rem;">📁</p>
-                                <p><fmt:message key="no_files" bundle="${messages}" /></p>
-                                <a href="${pageContext.request.contextPath}/upload" 
-                                   style="margin-top: 1rem; padding: 0.5rem 1rem; background-color: var(--vscode-accent); color: white; text-decoration: none; border-radius: 2px;">
-                                    <fmt:message key="upload_file" bundle="${messages}" />
-                                </a>
+                    <div style="display: flex; flex-direction: column; height: 100%;">
+                        <div style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--vscode-border); display: flex; justify-content: space-between; align-items: center; background-color: var(--vscode-panel-bg);">
+                            <span style="font-size: 13px; font-weight: 600; color: var(--vscode-text);">
+                                <fmt:message key="file_edit" bundle="${messages}" />: ${fileInfo.originalFilename}
+                            </span>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="saveFile()" 
+                                        style="padding: 0.25rem 0.75rem; background-color: var(--vscode-accent); color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 12px;">
+                                    저장
+                                </button>
+                                <button onclick="cancelEdit()" 
+                                        style="padding: 0.25rem 0.75rem; background-color: var(--vscode-sidebar-bg); color: var(--vscode-text); border: 1px solid var(--vscode-border); border-radius: 2px; cursor: pointer; font-size: 12px;">
+                                    취소
+                                </button>
                             </div>
-                        </c:when>
-                        <c:otherwise>
-                            <div style="padding: 2rem;">
-                                <h2 style="margin-bottom: 1rem; color: var(--vscode-text);">파일을 선택하세요</h2>
-                                <p style="color: var(--vscode-text-secondary);">좌측 사이드바에서 파일을 클릭하여 열 수 있습니다.</p>
+                        </div>
+                        
+                        <form id="edit-form" method="post" action="${pageContext.request.contextPath}/edit" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                            <input type="hidden" name="id" value="${fileInfo.uploadId}">
+                            <textarea id="file-content" name="content" 
+                                      style="flex: 1; margin: 0; padding: 1rem; overflow: auto; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.5; background-color: var(--vscode-bg); color: var(--vscode-text); border: none; resize: none; white-space: pre; tab-size: 4;">${fileContent}</textarea>
+                        </form>
+                        
+                        <%-- 에러 메시지 --%>
+                        <%
+                            String error = (String) request.getAttribute("error");
+                            if (error != null) {
+                        %>
+                            <div id="error-message" style="padding: 0.75rem 1rem; background-color: #fee; color: #c33; border-top: 1px solid #fcc; font-size: 13px;">
+                                <%= error %>
                             </div>
-                        </c:otherwise>
-                    </c:choose>
+                        <%
+                            }
+                        %>
+                    </div>
                 </div>
             </div>
-            
         </div>
         
         <!-- 하단 패널 (메모) -->
@@ -235,7 +191,6 @@
         <div class="vscode-status-bar">
             <div class="status-bar-left">
                 <span>${sessionScope.username}</span>
-                <span id="file-count">파일: ${files != null ? files.size() : 0}개</span>
             </div>
             <div class="status-bar-right">
                 <button onclick="togglePanel()" style="background: none; border: none; color: var(--vscode-text-secondary); cursor: pointer; padding: 0.25rem 0.5rem; font-size: 12px;" title="메모 패널 토글">
@@ -246,15 +201,60 @@
         </div>
     </div>
     
-    <!-- 공통 JavaScript -->
-    <jsp:include page="/jsp/common/vscode-footer.jspf" />
     <script>
-        // 페이지 로드 시 파일 아이콘 적용
-        window.addEventListener('DOMContentLoaded', function() {
-            if (typeof applyFileIcons === 'function') {
-                applyFileIcons();
+        function saveFile() {
+            document.getElementById('edit-form').submit();
+        }
+        
+        function cancelEdit() {
+            if (confirm('편집 내용을 저장하지 않고 나가시겠습니까?')) {
+                window.location.href = '${pageContext.request.contextPath}/';
+            }
+        }
+        
+        // Ctrl+S로 저장
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveFile();
             }
         });
+        
+        // 변경 감지
+        let originalContent = document.getElementById('file-content').value;
+        let isDirty = false;
+        
+        document.getElementById('file-content').addEventListener('input', function() {
+            isDirty = this.value !== originalContent;
+        });
+        
+        window.addEventListener('beforeunload', function(e) {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+        
+        // 하단 패널 토글
+        function togglePanel() {
+            let panel = document.getElementById('bottom-panel');
+            if (panel) {
+                panel.classList.toggle('visible');
+            }
+        }
+        
+        // 메모 저장
+        function saveMemo() {
+            let memoText = document.getElementById('memo-text').value;
+            // TODO: 서버에 메모 저장
+            alert('메모가 저장되었습니다. (Phase 3에서 구현 예정)');
+        }
+        
+        // Activity 전환
+        function switchActivity(activity) {
+            // 구현 필요 시 추가
+        }
     </script>
+    <jsp:include page="/jsp/common/vscode-footer.jspf" />
 </body>
 </html>

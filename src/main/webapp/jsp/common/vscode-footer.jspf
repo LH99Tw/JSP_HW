@@ -1,0 +1,472 @@
+    <!-- 파일 아이콘 스크립트 -->
+    <script src="${pageContext.request.contextPath}/js/file-icons.js"></script>
+    <!-- 드래그 앤 드롭 스크립트 -->
+    <script src="${pageContext.request.contextPath}/js/drag-drop.js"></script>
+    
+    <!-- 공통 JavaScript -->
+    <script>
+        let openTabs = [];
+        let currentTabId = null;
+        let currentActivity = 'explorer';
+        
+        // Activity 전환
+        function switchActivity(activity) {
+            currentActivity = activity;
+            
+            // Activity Bar 아이템 활성화
+            document.querySelectorAll('.activity-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector('[data-activity="' + activity + '"]').classList.add('active');
+            
+            // Sidebar 콘텐츠 전환
+            document.querySelectorAll('.sidebar-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById(activity + '-content').style.display = 'flex';
+        }
+        
+        // 파일 목록 로드
+        function loadFileList() {
+            fetch('${pageContext.request.contextPath}/api/files')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateFileTree(data.files);
+                        document.getElementById('file-count').textContent = '파일: ' + data.files.length + '개';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading files:', error);
+                });
+        }
+        
+        // 파일 트리 업데이트
+        function updateFileTree(files) {
+            let fileTree = document.getElementById('file-tree');
+            // "모든 파일" 항목 제외하고 나머지 제거
+            let allFilesItem = fileTree.querySelector('li:first-child');
+            fileTree.innerHTML = '';
+            if (allFilesItem) {
+                fileTree.appendChild(allFilesItem);
+            }
+            
+            files.forEach(file => {
+                let li = document.createElement('li');
+                li.className = 'file-tree-item file-item';
+                li.setAttribute('data-file-id', file.uploadId);
+                li.setAttribute('data-file-name', file.originalFilename);
+                li.onclick = () => openFileFromElement(li);
+                
+                let iconSpan = document.createElement('span');
+                iconSpan.className = 'file-icon';
+                iconSpan.setAttribute('data-filename', file.originalFilename);
+                if (typeof window.getFileIcon === 'function') {
+                    iconSpan.innerHTML = window.getFileIcon(file.originalFilename);
+                }
+                
+                let nameSpan = document.createElement('span');
+                nameSpan.className = 'name';
+                nameSpan.textContent = file.originalFilename;
+                
+                li.appendChild(iconSpan);
+                li.appendChild(nameSpan);
+                fileTree.appendChild(li);
+            });
+            
+            // 아이콘 적용
+            applyFileIcons();
+        }
+        
+        // 파일 아이콘 결정 (SVG 사용)
+        function getFileIcon(filename) {
+            if (typeof window.getFileIcon === 'function') {
+                return window.getFileIcon(filename);
+            }
+            // 폴백: 기본 아이콘
+            return '<svg width="16" height="16" viewBox="0 0 16 16"><rect x="3" y="2" width="10" height="12" rx="1" fill="#90A4AE"/></svg>';
+        }
+        
+        // 파일 아이콘 적용
+        function applyFileIcons() {
+            document.querySelectorAll('.file-icon[data-filename]').forEach(icon => {
+                const filename = icon.getAttribute('data-filename');
+                if (filename && typeof window.getFileIcon === 'function') {
+                    icon.innerHTML = window.getFileIcon(filename);
+                }
+            });
+            
+            // 루트 폴더 아이콘
+            const rootIcon = document.getElementById('root-folder-icon');
+            if (rootIcon && typeof window.getFolderIcon === 'function') {
+                rootIcon.innerHTML = window.getFolderIcon(false);
+            }
+        }
+        
+        // 파일 열기 (data 속성에서)
+        function openFileFromElement(element) {
+            let fileId = parseInt(element.getAttribute('data-file-id'));
+            let filename = element.getAttribute('data-file-name');
+            openFile(fileId, filename);
+        }
+        
+        // 파일 열기
+        function openFile(fileId, filename) {
+            // 이미 열려있는 탭인지 확인
+            let existingTab = openTabs.find(tab => tab.id === fileId);
+            if (existingTab) {
+                switchToTab(fileId);
+                return;
+            }
+            
+            // 새 탭 추가
+            let tab = {
+                id: fileId,
+                name: filename,
+                url: '${pageContext.request.contextPath}/edit?id=' + fileId
+            };
+            openTabs.push(tab);
+            
+            // 탭 UI 추가
+            addTabToUI(tab);
+            
+            // 파일 내용 로드
+            loadFileContent(fileId, filename);
+        }
+        
+        // 탭 UI에 추가
+        function addTabToUI(tab) {
+            let tabsContainer = document.getElementById('tabs-container');
+            let tabElement = document.createElement('div');
+            tabElement.className = 'vscode-tab';
+            tabElement.id = 'tab-' + tab.id;
+            let escapedName = escapeHtml(tab.name);
+            tabElement.innerHTML = 
+                '<span>' + escapedName + '</span>' +
+                '<span class="close" onclick="closeTab(' + tab.id + ', event)">×</span>';
+            tabElement.onclick = () => switchToTab(tab.id);
+            tabsContainer.appendChild(tabElement);
+            
+            // 첫 탭이면 활성화
+            if (openTabs.length === 1) {
+                switchToTab(tab.id);
+            }
+        }
+        
+        // 탭 전환
+        function switchToTab(fileId) {
+            currentTabId = fileId;
+            document.querySelectorAll('.vscode-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            let tabElement = document.getElementById('tab-' + fileId);
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
+            
+            // 파일 내용 다시 로드
+            let tab = openTabs.find(t => t.id === fileId);
+            if (tab) {
+                loadFileContent(fileId, tab.name);
+            }
+        }
+        
+        // 탭 닫기
+        function closeTab(fileId, event) {
+            event.stopPropagation();
+            openTabs = openTabs.filter(tab => tab.id !== fileId);
+            let tabElement = document.getElementById('tab-' + fileId);
+            if (tabElement) {
+                tabElement.remove();
+            }
+            
+            // 닫은 탭이 현재 탭이면 다른 탭으로 전환
+            if (currentTabId === fileId) {
+                if (openTabs.length > 0) {
+                    switchToTab(openTabs[0].id);
+                } else {
+                    document.getElementById('editor-container').innerHTML = 
+                        '<div style="padding: 2rem;">' +
+                        '<h2 style="margin-bottom: 1rem; color: var(--vscode-text);">파일을 선택하세요</h2>' +
+                        '<p style="color: var(--vscode-text-secondary);">좌측 사이드바에서 파일을 클릭하여 열 수 있습니다.</p>' +
+                        '</div>';
+                    currentTabId = null;
+                }
+            }
+        }
+        
+        // 파일 내용 로드
+        function loadFileContent(fileId, filename) {
+            let fileExt = filename.split('.').pop().toLowerCase();
+            
+            // PDF 파일인 경우
+            if (fileExt === 'pdf') {
+                let pdfUrl = '${pageContext.request.contextPath}/view?id=' + fileId;
+                document.getElementById('editor-container').innerHTML = 
+                    '<iframe src="' + pdfUrl + '" style="width: 100%; height: 100%; border: none; background: white;"></iframe>';
+                return;
+            }
+            
+            // 텍스트 파일인 경우
+            if (['txt', 'md', 'json', 'java', 'jsp', 'js', 'css', 'html', 'xml', 'properties', 'yml', 'yaml'].includes(fileExt)) {
+                fetch('${pageContext.request.contextPath}/view?id=' + fileId)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('HTTP error! status: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            let escapedFilename = escapeHtml(data.filename);
+                            let escapedContent = escapeHtml(data.content);
+                            // 작은따옴표를 이스케이프 처리
+                            let escapedFilenameForAttr = escapedFilename.replace(/'/g, "\\'");
+                            
+                            // 편집 가능한 텍스트 파일인 경우 편집 버튼 표시
+                            if (['txt', 'md', 'json', 'java', 'jsp', 'js', 'css', 'html', 'xml', 'properties'].includes(fileExt)) {
+                                let editorHtml = '<div style="display: flex; flex-direction: column; height: 100%;">' +
+                                    '<div style="padding: 0.5rem; border-bottom: 1px solid var(--vscode-border); display: flex; justify-content: space-between; align-items: center; background-color: var(--vscode-panel-bg);">' +
+                                    '<span style="font-size: 13px; font-weight: 600; color: var(--vscode-text);">' + escapedFilename + '</span>' +
+                                    '<button onclick="editFile(' + fileId + ', \'' + escapedFilenameForAttr + '\')" ' +
+                                    'style="padding: 0.25rem 0.5rem; background-color: var(--vscode-accent); color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 12px;">' +
+                                    '편집</button>' +
+                                    '</div>' +
+                                    '<pre style="flex: 1; margin: 0; padding: 1rem; overflow: auto; font-family: \'Courier New\', monospace; font-size: 14px; line-height: 1.5; background-color: var(--vscode-bg); color: var(--vscode-text); white-space: pre-wrap; word-wrap: break-word;">' + escapedContent + '</pre>' +
+                                    '</div>';
+                                document.getElementById('editor-container').innerHTML = editorHtml;
+                            } else {
+                                // 읽기 전용 뷰어
+                                let viewerHtml = '<div style="display: flex; flex-direction: column; height: 100%;">' +
+                                    '<div style="padding: 0.5rem; border-bottom: 1px solid var(--vscode-border); background-color: var(--vscode-panel-bg);">' +
+                                    '<span style="font-size: 13px; font-weight: 600; color: var(--vscode-text);">' + escapedFilename + '</span>' +
+                                    '</div>' +
+                                    '<pre style="flex: 1; margin: 0; padding: 1rem; overflow: auto; font-family: \'Courier New\', monospace; font-size: 14px; line-height: 1.5; background-color: var(--vscode-bg); color: var(--vscode-text); white-space: pre-wrap; word-wrap: break-word;">' + escapedContent + '</pre>' +
+                                    '</div>';
+                                document.getElementById('editor-container').innerHTML = viewerHtml;
+                            }
+                        } else {
+                            let errorMsg = data.message || '파일을 불러올 수 없습니다.';
+                            document.getElementById('editor-container').innerHTML = 
+                                '<div style="padding: 2rem; text-align: center;">' +
+                                '<p style="color: var(--vscode-text-secondary);">' + escapeHtml(errorMsg) + '</p>' +
+                                '</div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading file:', error);
+                        let escapedName = escapeHtml(filename);
+                        document.getElementById('editor-container').innerHTML = 
+                            '<div style="padding: 2rem; text-align: center;">' +
+                            '<h2 style="color: var(--vscode-text);">' + escapedName + '</h2>' +
+                            '<p style="color: var(--vscode-text-secondary);">파일을 불러오는 중 오류가 발생했습니다.</p>' +
+                            '</div>';
+                    });
+            } else {
+                // 지원하지 않는 파일 타입
+                let downloadUrl = '${pageContext.request.contextPath}/download?id=' + fileId;
+                document.getElementById('editor-container').innerHTML = 
+                    '<div style="padding: 2rem; text-align: center;">' +
+                    '<p style="color: var(--vscode-text-secondary);">이 파일 타입은 미리보기를 지원하지 않습니다.</p>' +
+                    '<a href="' + downloadUrl + '" style="margin-top: 1rem; display: inline-block; padding: 0.5rem 1rem; background-color: var(--vscode-accent); color: white; text-decoration: none; border-radius: 2px;">다운로드</a>' +
+                    '</div>';
+            }
+        }
+        
+        // HTML 이스케이프
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 파일 편집 모드로 전환
+        function editFile(fileId, filename) {
+            window.location.href = '${pageContext.request.contextPath}/edit?id=' + fileId;
+        }
+        
+        // 모든 파일 로드
+        function loadAllFiles() {
+            loadFileList();
+        }
+        
+        // 하단 패널 토글
+        function togglePanel() {
+            let panel = document.getElementById('bottom-panel');
+            panel.classList.toggle('visible');
+        }
+        
+        // 패널 전환 (메모/터미널)
+        function switchPanel(panelName) {
+            // 탭 활성화
+            document.querySelectorAll('.vscode-panel-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector('[data-panel="' + panelName + '"]').classList.add('active');
+            
+            // 콘텐츠 전환
+            document.querySelectorAll('.panel-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById(panelName + '-panel-content').style.display = 'block';
+        }
+        
+        // 메모 저장
+        function saveMemo() {
+            let memoText = document.getElementById('memo-text').value;
+            // TODO: 서버에 메모 저장
+            alert('메모가 저장되었습니다. (Phase 3에서 구현 예정)');
+        }
+        
+        // 검색 오버레이 열기
+        function openSearchOverlay() {
+            const overlay = document.getElementById('search-overlay');
+            if (overlay) {
+                overlay.classList.add('visible');
+                const input = document.getElementById('search-overlay-input');
+                if (input) {
+                    input.focus();
+                    // 검색어가 있으면 자동으로 검색
+                    const mainSearchInput = document.getElementById('search-input');
+                    if (mainSearchInput && mainSearchInput.value) {
+                        input.value = mainSearchInput.value;
+                        performSearch(input.value);
+                    }
+                }
+            }
+        }
+        
+        // 검색 오버레이 닫기
+        function closeSearchOverlay() {
+            const overlay = document.getElementById('search-overlay');
+            if (overlay) {
+                overlay.classList.remove('visible');
+            }
+        }
+        
+        // 백드롭 클릭 시 닫기
+        function closeSearchOverlayOnBackdrop(event) {
+            if (event.target.id === 'search-overlay') {
+                closeSearchOverlay();
+            }
+        }
+        
+        // 검색 탭 전환
+        function switchSearchTab(tabName) {
+            document.querySelectorAll('.search-overlay-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector('[data-tab="' + tabName + '"]').classList.add('active');
+            
+            // 탭별 검색 로직 (향후 구현)
+            const input = document.getElementById('search-overlay-input');
+            if (input && input.value) {
+                performSearch(input.value, tabName);
+            }
+        }
+        
+        // 검색 수행
+        function performSearch(query, tabType = 'files') {
+            if (!query || !query.trim()) {
+                document.getElementById('search-results').innerHTML = 
+                    '<div class="search-overlay-empty">검색어를 입력하세요...</div>';
+                return;
+            }
+            
+            const resultsContainer = document.getElementById('search-results');
+            
+            // 파일 검색
+            if (tabType === 'files') {
+                // 파일 목록에서 검색
+                fetch('${pageContext.request.contextPath}/api/files')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const files = data.files;
+                            const queryLower = query.toLowerCase();
+                            const filtered = files.filter(file => 
+                                file.originalFilename.toLowerCase().includes(queryLower)
+                            );
+                            
+                            if (filtered.length === 0) {
+                                resultsContainer.innerHTML = 
+                                    '<div class="search-overlay-empty">검색 결과가 없습니다.</div>';
+                                return;
+                            }
+                            
+                            let html = '';
+                            filtered.forEach(file => {
+                                const icon = typeof window.getFileIcon === 'function' 
+                                    ? window.getFileIcon(file.originalFilename) 
+                                    : '<svg width="16" height="16"><rect width="16" height="16" fill="#90A4AE"/></svg>';
+                                html += '<div class="search-result-item" onclick="openFileFromSearch(' + file.uploadId + ', \'' + escapeHtml(file.originalFilename) + '\')">' +
+                                    '<span class="file-icon">' + icon + '</span>' +
+                                    '<div class="file-info">' +
+                                    '<div class="file-name">' + escapeHtml(file.originalFilename) + '</div>' +
+                                    '<div class="file-path">파일</div>' +
+                                    '</div>' +
+                                    '</div>';
+                            });
+                            resultsContainer.innerHTML = html;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error searching:', error);
+                        resultsContainer.innerHTML = 
+                            '<div class="search-overlay-empty">검색 중 오류가 발생했습니다.</div>';
+                    });
+            }
+        }
+        
+        // 검색 결과에서 파일 열기
+        function openFileFromSearch(fileId, filename) {
+            closeSearchOverlay();
+            if (typeof openFile === 'function') {
+                openFile(fileId, filename);
+            }
+        }
+        
+        // 검색 오버레이 입력 이벤트
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlayInput = document.getElementById('search-overlay-input');
+            if (overlayInput) {
+                overlayInput.addEventListener('input', function(e) {
+                    const query = e.target.value.trim();
+                    const activeTab = document.querySelector('.search-overlay-tab.active');
+                    const tabType = activeTab ? activeTab.getAttribute('data-tab') : 'files';
+                    performSearch(query, tabType);
+                });
+                
+                overlayInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        closeSearchOverlay();
+                    } else if (e.key === 'Enter') {
+                        const firstResult = document.querySelector('.search-result-item');
+                        if (firstResult) {
+                            firstResult.click();
+                        }
+                    }
+                });
+            }
+            
+            // 메인 검색창 클릭 시 오버레이 열기
+            const mainSearchInput = document.getElementById('search-input');
+            if (mainSearchInput) {
+                mainSearchInput.addEventListener('click', function() {
+                    openSearchOverlay();
+                });
+                
+                mainSearchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openSearchOverlay();
+                    }
+                });
+            }
+            
+            // 페이지 로드 시 파일 목록 로드 (API 사용)
+            if (typeof loadFileList === 'function') {
+                loadFileList();
+            }
+        });
+    </script>

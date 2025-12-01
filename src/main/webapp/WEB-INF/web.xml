@@ -57,8 +57,6 @@
             <url-pattern>*.jsp</url-pattern>
             <page-encoding>UTF-8</page-encoding>
             <scripting-invalid>false</scripting-invalid>
-            <include-prelude>/jsp/common/header.jspf</include-prelude>
-            <include-coda>/jsp/common/footer.jspf</include-coda>
         </jsp-property-group>
     </jsp-config>
     
